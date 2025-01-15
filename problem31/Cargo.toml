@@ -1,0 +1,7 @@
+[package]
+name = "problem30"
+version = "0.1.0"
+edition = "2021"
+proc_macro = true
+
+[dependencies]
