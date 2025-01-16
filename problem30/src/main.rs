@@ -23,7 +23,7 @@ fn digit_power_sum(num: usize, power: u32) -> usize {
 
 fn main() {
     let mut sum = 0;
-    for i in 1..=MAX_NUM {
+    for i in 2..=MAX_NUM {
         let digit_sum = digit_power_sum(i, 5);
         if i == digit_sum {
             sum += digit_sum;
