@@ -48,7 +48,7 @@ fn char_to_num(c: char) -> usize {
 fn get_score(name: String, index: usize) -> usize {
     let nums = string_to_num(name);
     let sum: usize = nums.iter().sum();
-    index * sum
+    (index + 1) * sum
 }
 
 fn calculate_scores(names: Vec<String>) -> usize {
