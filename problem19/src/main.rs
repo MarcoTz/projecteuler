@@ -1,4 +1,4 @@
-#[derive(PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq)]
 enum Month {
     January,
     February,
@@ -106,8 +106,13 @@ impl Day {
         if self.month == Month::February && self.year.is_leap() {
             month_days += 1;
         }
-        let day = (self.day + 1) % month_days + 1;
+
+        let mut day = self.day % (month_days + 1);
+        if day == 0 {
+            day += 1
+        };
         let weekday = self.weekday.next();
+
         let mut month = self.month;
         let mut year = self.year;
         if day == 1 {
@@ -127,12 +132,12 @@ impl Day {
 
 fn main() {
     let mut day = Day::default();
-    let mut mondays = 0;
-    while day.year < Year(2000) {
+    let mut sundays = 0;
+    while day.year < Year(2001) {
         day = day.next();
-        if day.weekday == Weekday::Monday && day.day == 1 {
-            mondays += 1;
+        if day.weekday == Weekday::Sunday && day.day == 1 {
+            sundays += 1;
         }
     }
-    println!("Number of mondays: {mondays}");
+    println!("Number of Sundays: {sundays}");
 }
