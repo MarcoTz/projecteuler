@@ -13,11 +13,12 @@ impl Decimal {
     fn unit_fraction(denominator: usize) -> Decimal {
         let mut remainder = 10;
         let mut digits = vec![];
+        let mut previous_remainders = vec![];
         while remainder != 0 {
             let next_digit = remainder / denominator;
             remainder = remainder - next_digit * denominator;
             remainder *= 10;
-            if digits.contains(&next_digit) {
+            if digits.contains(&next_digit) && previous_remainders.contains(&remainder) {
                 let index = digits
                     .iter()
                     .position(|digit| *digit == next_digit)
@@ -29,6 +30,7 @@ impl Decimal {
                     recurring_digits: recurring,
                 };
             }
+            previous_remainders.push(remainder);
             digits.push(next_digit);
         }
         Decimal {
