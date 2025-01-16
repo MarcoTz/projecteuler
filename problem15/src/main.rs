@@ -1,95 +1,53 @@
-use core::array;
-const GRID_WIDTH: usize = 20;
-const GRID_HEIGHT: usize = 20;
+use std::collections::HashMap;
 
-type GridRow = [Cell; GRID_WIDTH];
-type Coordinate = (usize, usize);
+const GRID_WIDTH: u64 = 20;
+const GRID_HEIGHT: u64 = 20;
 
-#[derive(Default, Debug)]
-struct Cell {
-    num_incoming: Option<usize>,
-    num_outgoing: Option<usize>,
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+struct GridPoint {
+    x: u64,
+    y: u64,
 }
 
-impl Cell {
-    pub fn filled(&self) -> bool {
-        self.num_incoming.is_some() && self.num_outgoing.is_some()
-    }
-}
+impl GridPoint {
+    fn paths(self, paths_cache: &mut HashMap<GridPoint, u64>) -> u64 {
+        if let Some(paths) = paths_cache.get(&self) {
+            return *paths;
+        }
 
-#[derive(Debug)]
-struct Grid {
-    rows: [GridRow; GRID_HEIGHT],
-}
-
-impl Grid {
-    pub fn new() -> Grid {
-        let mut rows = array::from_fn(|_| array::from_fn(|_| Cell::default()));
-        rows[0][0] = Cell {
-            num_incoming: Some(0),
-            num_outgoing: Some(2),
+        if self.start() {
+            return 1;
+        }
+        let (x, y) = (self.x, self.y);
+        let paths_up = if y > 0 {
+            let above = GridPoint { x, y: y - 1 };
+            above.paths(paths_cache)
+        } else {
+            0
         };
-        Grid { rows }
-    }
 
-    pub fn above(&self, i: usize, j: usize) -> Option<&Cell> {
-        if j > 0 {
-            Some(&self.rows[i][j - 1])
+        let paths_left = if x > 0 {
+            let left = GridPoint { x: x - 1, y };
+            left.paths(paths_cache)
         } else {
-            None
-        }
+            0
+        };
+
+        let paths = paths_up + paths_left;
+        paths_cache.insert(self, paths);
+
+        paths
     }
 
-    pub fn left(&self, i: usize, j: usize) -> Option<&Cell> {
-        if i > 0 {
-            Some(&self.rows[i - 1][j])
-        } else {
-            None
-        }
-    }
-
-    pub fn get_next(&self) -> Option<(Coordinate, usize, usize)> {
-        for i in 0..GRID_WIDTH {
-            for j in 0..GRID_HEIGHT {
-                if self.rows[i][j].filled() {
-                    continue;
-                }
-                let num_above = if let Some(ab) = self.above(i, j) {
-                    if !ab.filled() {
-                        continue;
-                    }
-                    ab.num_outgoing.unwrap()
-                } else {
-                    0
-                };
-                let num_left = if let Some(lf) = self.left(i, j) {
-                    if !lf.filled() {
-                        continue;
-                    }
-                    lf.num_outgoing.unwrap()
-                } else {
-                    0
-                };
-                return Some(((i, j), num_above, num_left));
-            }
-        }
-        None
-    }
-
-    pub fn fill(&mut self) {
-        while let Some(((i, j), num_above, num_left)) = self.get_next() {
-            let cell = &mut self.rows[i][j];
-            cell.num_incoming = Some(num_above + num_left - 2);
-            cell.num_outgoing = Some(num_above + num_left);
-        }
+    fn start(&self) -> bool {
+        self.x == 0 && self.y == 0
     }
 }
-
-impl Grid {}
-
 fn main() {
-    let mut grid = Grid::new();
-    grid.fill();
-    let last = &grid.rows[GRID_WIDTH - 1][GRID_HEIGHT - 1];
-    println!("number of paths: {}", last.num_outgoing.unwrap());
+    let end = GridPoint {
+        x: GRID_WIDTH,
+        y: GRID_HEIGHT,
+    };
+    let paths = end.paths(&mut Default::default());
+    println!("{}", paths);
 }
