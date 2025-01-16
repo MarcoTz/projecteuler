@@ -24,35 +24,19 @@ fn fermat_pseudoprime(num: u64, tries: u64, gen: &mut ThreadRng) -> bool {
     true
 }
 
-fn is_prime(num: u64, cache: &mut Vec<u64>, gen: &mut ThreadRng) -> bool {
-    if cache.contains(&num) {
-        return true;
-    }
-    let highest_prime = *cache.last().unwrap();
-    if num < highest_prime {
-        return false;
-    }
-
+fn is_prime(num: u64, gen: &mut ThreadRng) -> bool {
     let num_tries = (0.25_f64).powi(num as i32).ceil() as u64;
     if !fermat_pseudoprime(num, num_tries, gen) {
         return false;
     }
 
-    for prime in cache.iter() {
-        if num % prime == 0 {
-            return false;
-        }
-    }
-
-    let min = highest_prime;
     let max = (num as f64).sqrt().ceil() as u64;
-    for i in min..=max {
+    for i in 2..=max {
         if num % i == 0 {
             return false;
         }
     }
 
-    cache.push(num);
     true
 }
 
@@ -85,15 +69,15 @@ fn pandigital(num: u64) -> bool {
 }
 fn main() {
     let mut gen = thread_rng();
-    let mut cache = vec![2, 3, 5, 7];
 
-    for i in 1..=9 {
+    for i in 1..9 {
         let mut highest_j = 0;
         for j in 10_usize.pow(i)..10_usize.pow(i + 1) {
-            if !is_prime(j as u64, &mut cache, &mut gen) {
+            if !pandigital(j as u64) {
                 continue;
             }
-            if !pandigital(j as u64) {
+
+            if !is_prime(j as u64, &mut gen) {
                 continue;
             }
             highest_j = highest_j.max(j);
