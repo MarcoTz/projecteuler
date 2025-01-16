@@ -35,7 +35,7 @@ impl Coin {
             Coin::Twenty => 20,
             Coin::Fifty => 50,
             Coin::Pound => 100,
-            Coin::TwoPound => 100,
+            Coin::TwoPound => 200,
         }
     }
 }
