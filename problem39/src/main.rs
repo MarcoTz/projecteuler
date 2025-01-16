@@ -2,7 +2,7 @@ use std::{collections::HashMap, fmt};
 
 const MAX_PERI: u64 = 1000;
 
-#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+#[derive(Debug, Clone, Copy)]
 struct PythagoreanTriple {
     a: u64,
     b: u64,
@@ -12,7 +12,7 @@ struct PythagoreanTriple {
 impl PythagoreanTriple {
     fn generate(max: u64) -> Vec<Self> {
         let mut triples = vec![];
-        let mut m = 0;
+        let mut m = 1;
         loop {
             let min_peri = 2 * (m * m + m);
             if min_peri > max {
@@ -22,17 +22,17 @@ impl PythagoreanTriple {
                 let a = m * m - n * n;
                 let b = 2 * m * n;
                 let c = m * m + n * n;
-                let mut mult = 1;
                 let mut new_triple = PythagoreanTriple { a, b, c };
                 loop {
                     if new_triple.peri() > max {
                         break;
                     }
-                    triples.push(new_triple);
-                    new_triple.a *= mult;
-                    new_triple.b *= mult;
-                    new_triple.c *= mult;
-                    mult += 1;
+                    if !triples.contains(&new_triple) {
+                        triples.push(new_triple);
+                    }
+                    new_triple.a += a;
+                    new_triple.b += b;
+                    new_triple.c += c;
                 }
             }
             m += 1;
@@ -44,6 +44,14 @@ impl PythagoreanTriple {
         self.a + self.b + self.c
     }
 }
+
+impl PartialEq for PythagoreanTriple {
+    fn eq(&self, other: &PythagoreanTriple) -> bool {
+        (self.a == other.a && self.b == other.b) || (self.a == other.b && self.b == other.b)
+    }
+}
+
+impl Eq for PythagoreanTriple {}
 
 impl fmt::Display for PythagoreanTriple {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
