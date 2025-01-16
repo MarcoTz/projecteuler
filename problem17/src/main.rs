@@ -22,13 +22,21 @@ fn say_num(num: usize) -> String {
         19 => "nineteen".to_owned(),
         i if i < 100 => {
             let tenth_str = say_tenth(i / 10);
-            let unit_str = say_num(i % 10);
+            let unit_str = if i % 10 == 0 {
+                "".to_owned()
+            } else {
+                say_num(i % 10)
+            };
             format!("{tenth_str}{unit_str}")
         }
         i => {
-            let end = say_num(i % 100);
+            let end = if i % 100 == 0 {
+                "".to_owned()
+            } else {
+                format!("and{}", say_num(i % 100))
+            };
             let start = say_num(i / 100);
-            format!("{start}hundredand{end}")
+            format!("{start}hundred{end}")
         }
     }
 }
@@ -37,13 +45,13 @@ fn say_tenth(num: usize) -> String {
     match num {
         1 => "teen".to_owned(),
         2 => "twenty".to_owned(),
-        3 => "thiry".to_owned(),
+        3 => "thirty".to_owned(),
         4 => "forty".to_owned(),
         5 => "fifty".to_owned(),
         6 => "sixty".to_owned(),
         7 => "seventy".to_owned(),
         8 => "eighty".to_owned(),
-        9 => "nineteen".to_owned(),
+        9 => "ninety".to_owned(),
         _ => panic!("Number too high"),
     }
 }
@@ -53,5 +61,6 @@ fn main() {
     for i in 1..1000 {
         count += say_num(i).len();
     }
+    count += "onethousand".len();
     println!("Number of letters {count}");
 }
