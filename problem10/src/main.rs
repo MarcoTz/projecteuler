@@ -1,22 +1,34 @@
-use std::collections::HashSet;
+const MAX_NUM: u64 = 2000000;
 
-fn sieve_sum(end: i64) -> i64 {
-    let mut candidates: HashSet<i64> = (2..end).collect();
-    let mut primes = vec![];
-    let mut sum = 0;
+struct PrimeSieve {
+    primes: Vec<u64>,
+    remaining: Vec<u64>,
+}
 
-    while let Some(i) = candidates.iter().min().cloned() {
-        primes.push(i);
-        sum += i;
-        for n in 1..((end / i) + 1) {
-            candidates.remove(&(n * i));
+impl PrimeSieve {
+    fn new(max: u64) -> PrimeSieve {
+        PrimeSieve {
+            primes: vec![],
+            remaining: (2..=max).collect(),
         }
-        println!("Finished {i}/{end}");
     }
 
-    return sum;
+    fn search(&mut self) {
+        while !self.remaining.is_empty() {
+            let next_prime = self.remaining.remove(0);
+            self.primes.push(next_prime);
+            self.remaining = self
+                .remaining
+                .iter()
+                .filter_map(|num| (num % next_prime != 0).then_some(*num))
+                .collect();
+            println!("remaining: {}", self.remaining.len());
+        }
+    }
 }
 
 fn main() {
-    println!("{:?}", sieve_sum(2000000))
+    let mut sieve = PrimeSieve::new(MAX_NUM);
+    sieve.search();
+    println!("{}", sieve.primes.iter().sum::<u64>());
 }
