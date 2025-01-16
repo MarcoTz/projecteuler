@@ -1,69 +1,65 @@
-use std::fs::read_to_string;
+use std::{fmt, fs::read_to_string, iter};
 
 const TRIANGLE_FILE: &str = "triangle.txt";
 
-type TriangleRow = Vec<usize>;
+type TriangleRow = Vec<u64>;
 
 #[derive(Debug, Clone)]
 struct Triangle {
     rows: Vec<TriangleRow>,
 }
 
-fn load_triangle() -> Triangle {
-    let contents = read_to_string(TRIANGLE_FILE).unwrap();
-    let mut triangle = Triangle { rows: vec![] };
-    for line in contents.lines() {
-        let line_nums: TriangleRow = line
-            .split(' ')
-            .map(|num| num.parse::<usize>().unwrap())
-            .collect();
-        triangle.rows.push(line_nums);
+impl Triangle {
+    fn load() -> Triangle {
+        let contents = read_to_string(TRIANGLE_FILE).unwrap();
+        let mut triangle = Triangle { rows: vec![] };
+        for line in contents.lines() {
+            let line_nums: TriangleRow = line
+                .split(' ')
+                .map(|num| num.parse::<u64>().unwrap())
+                .collect();
+            triangle.rows.push(line_nums);
+        }
+        triangle
     }
-    triangle
+    fn get(&self, x: usize, y: usize) -> Option<u64> {
+        let row = self.rows.get(y)?;
+        row.get(x).copied()
+    }
+
+    fn max_sum(&self, start_x: usize, start_y: usize) -> u64 {
+        let val = self.get(start_x, start_y).unwrap_or(0);
+        if start_y == self.rows.len() - 1 || val == 0 {
+            return val;
+        }
+        let left_sum = self.max_sum(start_x, start_y + 1);
+        let right_sum = self.max_sum(start_x + 1, start_y + 1);
+        let sum = left_sum.max(right_sum);
+        sum + val
+    }
 }
 
-fn max_from(triangle: Triangle, start: usize) -> usize {
-    if triangle.rows.is_empty() {
-        return 0;
+impl fmt::Display for Triangle {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let max_len = 2 * self.rows.iter().map(|row| row.len()).max().unwrap();
+        for (ind, row) in self.rows.iter().enumerate() {
+            let leading_spaces = max_len - 2 * ind;
+            let spaces = iter::repeat(" ".to_owned())
+                .take(leading_spaces)
+                .collect::<Vec<String>>()
+                .join("");
+            write!(f, "{spaces}")?;
+            for val in row.iter() {
+                write!(f, " {val:02} ")?;
+            }
+            writeln!(f, "")?;
+        }
+        Ok(())
     }
-    if start >= triangle.rows.last().unwrap().len() {
-        return 0;
-    }
-    let mut triangle = triangle;
-    let bottom_num = triangle.rows.pop().unwrap()[start];
-    if triangle.rows.is_empty() {
-        return bottom_num;
-    }
-    let mut sum_left = if start > 0 {
-        max_from(triangle.clone(), start - 1)
-    } else {
-        0
-    };
-    sum_left += bottom_num;
-
-    let mut sum_right = if start <= triangle.rows[0].len() - 1 {
-        max_from(triangle, start)
-    } else {
-        0
-    };
-    sum_right += bottom_num;
-    sum_left.max(sum_right)
-}
-
-fn max_sum(triangle: Triangle) -> usize {
-    if triangle.rows.is_empty() {
-        return 0;
-    }
-    let bottom = triangle.rows.last().unwrap();
-    let mut max_sum = 0;
-    for (i, _) in bottom.iter().enumerate() {
-        let sum = max_from(triangle.clone(), i);
-        max_sum = sum.max(max_sum);
-    }
-    max_sum
 }
 
 fn main() {
-    let triangle = load_triangle();
-    println!("sum : {}", max_sum(triangle));
+    let triangle = Triangle::load();
+    println!("{triangle}");
+    println!("{}", triangle.max_sum(0, 0));
 }
